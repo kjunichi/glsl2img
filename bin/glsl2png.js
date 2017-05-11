@@ -35,8 +35,20 @@ const [width, height] = size.match(/^\d+x\d+$/) ? size.split('x') : [600, 600];
 const time = cli.flags.time || 0;
 const uniform = cli.flags.uniform || '{}';
 
-execFileSync(
-  `${__dirname}/wrapper.js`,
-  [width, height, file, time, uniform, out],
-  { stdio: cli.flags.verbose ? 'inherit' : 'ignore' }
-);
+if (process.platform !== 'win32') {
+  execFileSync(
+    `${__dirname}/wrapper.js`,
+    [width, height, file, time, uniform, out],
+    { stdio: cli.flags.verbose ? 'inherit' : 'ignore' }
+  );
+} else {
+  const spawnSync = require('child_process').spawnSync;
+
+  spawnSync(
+    'cmd.exe',
+    ['/c', `${__dirname}\\wrapper.bat`, `${__dirname}\\wrapper.js`, 
+    width, height, file, time, uniform, out],
+    { stdio: cli.flags.verbose ? 'inherit' : 'ignore' }
+  );
+
+}

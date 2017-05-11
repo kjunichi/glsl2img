@@ -62,14 +62,27 @@ const tmpDir = tmpObj.name;
 
 // Render frames
 let time = 0;
-range(frames).forEach(i => {
-  execFileSync(
-    `${__dirname}/wrapper.js`,
-    [width, height, file, time, uniform, `${tmpDir}/frame${pad5(i)}.png`],
-    { stdio: cli.flags.verbose ? 'inherit' : 'ignore' }
-  );
-  time += delay;
-});
+if (process.platform !== 'win32') {
+  range(frames).forEach(i => {
+    execFileSync(
+      `${__dirname}/wrapper.js`,
+      [width, height, file, time, uniform, `${tmpDir}/frame${pad5(i)}.png`],
+      { stdio: cli.flags.verbose ? 'inherit' : 'ignore' }
+    );
+    time += delay;
+  });
+} else {
+  const spawnSync = require('child_process').spawnSync;
+
+  range(frames).forEach(i => {
+    spawnSync(
+      'cmd.exe',
+      ['/c', `${__dirname}\\wrapper.bat`, `${__dirname}\\wrapper.js`, width, height, file, time, uniform, `${tmpDir}/frame${pad5(i)}.png`],
+      { stdio: cli.flags.verbose ? 'inherit' : 'ignore' }
+    );
+    time += delay;
+  });
+}
 
 // Convert PNG images to GIF
 const encoder = new GIFEncoder(width, height);
